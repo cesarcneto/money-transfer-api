@@ -1,0 +1,78 @@
+plugins {
+    // Apply the java plugin to add support for Java
+    id "java"
+
+    // Apply the application plugin to add support for building a CLI application.
+    id "application"
+
+    // Let"s use Shadow to generate our Fat-Jar
+    id "com.github.johnrengelman.shadow" version "5.2.0"
+}
+
+group = "io.cesarcneto.moneytransfer"
+version = "0.0.1-SNAPSHOT"
+java.sourceCompatibility = JavaVersion.VERSION_11
+
+repositories {
+    mavenCentral()
+    jcenter()
+}
+
+ext {
+    javalinVersion = "3.7.0"
+    mapstructVersion = "1.3.1.Final"
+    lombokVersion = "1.18.12"
+    sl4jVersion = "1.7.30"
+    h2Version = "1.4.200"
+    junitVersion = "5.5.2"
+    mockitoVersion = "2.1.0"
+    unirestJavaVersion = "3.6.00"
+    assertjVersion = "3.15.0"
+}
+
+dependencies {
+
+    implementation "io.javalin:javalin:${javalinVersion}"
+
+    implementation "org.projectlombok:lombok:${lombokVersion}"
+    implementation "org.mapstruct:mapstruct:${mapstructVersion}"
+    annotationProcessor "org.mapstruct:mapstruct-processor:${mapstructVersion}"
+    annotationProcessor "org.projectlombok:lombok:${lombokVersion}"
+
+    implementation "org.slf4j:slf4j-simple:${sl4jVersion}"
+
+    // Use JUnit Jupiter API for testing.
+    testImplementation "org.junit.jupiter:junit-jupiter-api:${junitVersion}"
+    testImplementation "org.junit.jupiter:junit-jupiter-params:${junitVersion}"
+
+    // Use JUnit Jupiter Engine for testing.
+    testRuntimeOnly "org.junit.jupiter:junit-jupiter-engine:${junitVersion}"
+
+    // Use mockito to enabling mocking
+    testImplementation "org.mockito:mockito-core:${mockitoVersion}"
+    // Unirest as a http client
+    testImplementation "com.konghq:unirest-java:${unirestJavaVersion}"
+    testImplementation "com.konghq:unirest-objectmapper-jackson:${unirestJavaVersion}"
+
+    // AssertJ for more readable assertions
+    testImplementation "org.assertj:assertj-core:${assertjVersion}"
+}
+
+application {
+    // Define the main class for the application.
+    mainClassName = "io.cesarcneto.moneytransfer.Application"
+}
+
+run {
+}
+
+test {
+    // Use junit platform for unit tests
+    useJUnitPlatform()
+}
+
+jar {
+    manifest {
+        attributes "Main-Class": application.getMainClassName()
+    }
+}
