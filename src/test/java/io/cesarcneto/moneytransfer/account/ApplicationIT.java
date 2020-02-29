@@ -1,50 +1,34 @@
 package io.cesarcneto.moneytransfer.account;
 
 import io.cesarcneto.moneytransfer.Application;
-import io.cesarcneto.moneytransfer.account.controller.AccountController;
 import io.cesarcneto.moneytransfer.account.dto.AccountDto;
 import io.cesarcneto.moneytransfer.account.dto.AccountInputDto;
-import io.cesarcneto.moneytransfer.account.mapper.AccountMapper;
-import io.cesarcneto.moneytransfer.account.repository.AccountRepository;
-import io.cesarcneto.moneytransfer.account.service.AccountService;
+import io.cesarcneto.moneytransfer.shared.dto.ApiErrorResponseDto;
 import kong.unirest.HttpResponse;
 import kong.unirest.Unirest;
-import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
-import org.mapstruct.factory.Mappers;
 
 import java.math.BigDecimal;
 import java.util.Random;
+import java.util.UUID;
 
-import static org.eclipse.jetty.http.HttpStatus.CREATED_201;
-import static org.eclipse.jetty.http.HttpStatus.OK_200;
+import static org.eclipse.jetty.http.HttpStatus.*;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 
 class ApplicationIT {
 
-    private Application appUnderTest;
     private String appHost;
 
     @BeforeEach
     void setup() {
 
-        AccountRepository accountRepository = new AccountRepository();
-        AccountService accountService = new AccountService(accountRepository);
-        AccountMapper accountMapper = Mappers.getMapper(AccountMapper.class);
-        AccountController accountController = new AccountController(accountService, accountMapper);
-
         int httpPort = getRandomHttpPort();
         appHost = String.format("http://localhost:%s", httpPort);
 
-        appUnderTest = new Application(accountController);
-        appUnderTest.start(httpPort);
-    }
-
-    @AfterEach
-    void tearDown() {
-        appUnderTest.stop();
+        System.setProperty("server.port", String.valueOf(httpPort));
+        Application.main(new String[]{});
     }
 
     @Test
@@ -70,10 +54,25 @@ class ApplicationIT {
     }
 
     @Test
+    void POST_accounts_withNoInitialAccountBalanceDefined() {
+
+        // given
+        String inputBody = "{}";
+
+        //when
+        HttpResponse<ApiErrorResponseDto> actualResponse = Unirest.post(String.format("%s/accounts", appHost))
+                .body(inputBody)
+                .asObject(ApiErrorResponseDto.class);
+
+        // then
+        assertEquals(BAD_REQUEST_400, actualResponse.getStatus());
+    }
+
+    @Test
     void GET_accountsById_happyPath() {
 
         // given
-        BigDecimal expectedInitialBalance = new BigDecimal("100");
+        BigDecimal expectedInitialBalance = new BigDecimal("100.00");
         AccountInputDto accountInputDto = AccountInputDto.builder()
                 .initialBalance(expectedInitialBalance)
                 .build();
@@ -93,6 +92,26 @@ class ApplicationIT {
         AccountDto actualAccountDto = actualResponse.getBody();
         assertEquals(expectedAccountDto.getId(), actualAccountDto.getId());
         assertEquals(expectedAccountDto.getBalance(), actualAccountDto.getBalance());
+    }
+
+    @Test
+    void GET_accountsById_returnsNotFoundForUnknownId() {
+
+        // given
+        AccountInputDto accountInputDto = AccountInputDto.builder().build();
+
+        Unirest.post(String.format("%s/accounts", appHost))
+                .body(accountInputDto)
+                .asObject(AccountDto.class)
+                .getBody();
+
+        //when
+        HttpResponse<AccountDto> actualResponse = Unirest
+                .get(String.format("%s/accounts/%s", appHost, UUID.randomUUID()))
+                .asObject(AccountDto.class);
+
+        // then
+        assertEquals(NOT_FOUND_404, actualResponse.getStatus());
     }
 
     private static final Random RANDOM = new Random();

@@ -16,6 +16,7 @@ public class AccountService {
     }
 
     public Account createAccount(Account account) {
-        return accountRepository.save(account.toBuilder().id(UUID.randomUUID()).build());
+        UUID id = accountRepository.save(account);
+        return Account.builder().id(id).balance(account.getBalance()).build();
     }
 }
