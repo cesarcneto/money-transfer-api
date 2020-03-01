@@ -7,6 +7,7 @@ import io.cesarcneto.moneytransfer.account.service.AccountService;
 import io.javalin.http.Context;
 import lombok.RequiredArgsConstructor;
 
+import java.math.BigDecimal;
 import java.util.UUID;
 
 import static java.util.Objects.nonNull;
@@ -27,6 +28,8 @@ public class AccountController {
 
         AccountInputDto accountInputDto = ctx.bodyValidator(AccountInputDto.class)
                 .check(input -> nonNull(input.getInitialBalance()), "'initialBalance' must be specified")
+                .check(input -> input.getInitialBalance().compareTo(BigDecimal.ZERO) >= 0,
+                        "'initialBalance' must be bigger than or equal to 0")
                 .get();
 
         AccountDto createdAccountDto = accountMapper.accountToDto(

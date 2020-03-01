@@ -78,7 +78,7 @@ class ApplicationIT {
     }
 
     @Test
-    void POST_accounts_withNoInitialAccountBalanceDefined() {
+    void POST_accounts_returnsBadRequestWithNoInitialAccountBalanceDefined() {
 
         // given
         String inputBody = "{}";
@@ -86,6 +86,23 @@ class ApplicationIT {
         //when
         HttpResponse<String> actualResponse = post(format("%s/%s", appHost, ACCOUNTS_ENDPOINT))
                 .body(inputBody)
+                .asString();
+
+        // then
+        assertEquals(BAD_REQUEST_400, actualResponse.getStatus());
+    }
+
+    @Test
+    void POST_accounts_returnsBadRequestWithNegativeInitialAccountBalanceDefined() {
+
+        // given
+        AccountInputDto accountInputDto = AccountInputDto.builder()
+                .initialBalance(BigDecimal.valueOf(-1))
+                .build();
+
+        //when
+        HttpResponse<String> actualResponse = post(format("%s/%s", appHost, ACCOUNTS_ENDPOINT))
+                .body(accountInputDto)
                 .asString();
 
         // then
@@ -228,7 +245,7 @@ class ApplicationIT {
         ExecutorService executor = Executors.newCachedThreadPool();
         CountDownLatch latch = new CountDownLatch(NUMBER_OF_TRANSFERS);
 
-        Collection<Callable<HttpResponse>> transferRequests = new ArrayList<>();
+        Collection<Callable<HttpResponse<String>>> transferRequests = new ArrayList<>();
         Instant baseInstant = Instant.parse("2020-03-01T13:00:00.000Z");
         for (int i = 0; i < NUMBER_OF_TRANSFERS; i++) {
             baseInstant = baseInstant.plus(1, ChronoUnit.MINUTES);
@@ -244,9 +261,9 @@ class ApplicationIT {
                         .build();
 
                 String transferPath = format("%s/%s", appHost, TRANSFERS_ENDPOINT);
-                HttpResponse actualResponse = post(transferPath)
+                HttpResponse<String> actualResponse = post(transferPath)
                         .body(transferInputDto)
-                        .asEmpty();
+                        .asString();
 
                 latch.countDown();
 
@@ -255,14 +272,14 @@ class ApplicationIT {
         }
 
         //when
-        List<Future<HttpResponse>> futureList = executor.invokeAll(transferRequests);
+        List<Future<HttpResponse<String>>> futureList = executor.invokeAll(transferRequests);
         latch.await();
 
         // then
         int successes = 0;
         int failures = 0;
-        for(Future<HttpResponse> future : futureList) {
-            HttpResponse httpResponse = future.get();
+        for(Future<HttpResponse<String>> future : futureList) {
+            HttpResponse<String> httpResponse = future.get();
 
             if (OK_200 == httpResponse.getStatus()) {
                 successes++;
