@@ -96,3 +96,9 @@ jar {
         attributes "Main-Class": application.getMainClassName()
     }
 }
+
+shadowJar {
+    archiveBaseName = "app"
+    archiveClassifier = ""
+    archiveVersion = ""
+}

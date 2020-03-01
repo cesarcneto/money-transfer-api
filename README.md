@@ -98,8 +98,10 @@ docker build -t money-transfer-api:latest .
 2. Run the container
 
 ```
-docker run -d --rm --name money-transfer-api money-transfer-api:latest
+docker run -d --rm --name money-transfer-api -p 8080:8080 money-transfer-api:latest
 ```
+
+One can also choose a different port by providing `SERVER_PORT` environment variable
 
 #### Using Gradle and/or Java Runtime Environment
 
