@@ -21,7 +21,7 @@ public class AccountService {
     }
 
     public Map<UUID, Account> getAccountsById(List<UUID> accountIds) {
-        return accountRepository.getAccountsById(accountIds)
+        return accountRepository.getAccountsByIdForUpdate(accountIds)
         .stream()
         .collect(Collectors.toMap(Account::getId, Function.identity()));
     }

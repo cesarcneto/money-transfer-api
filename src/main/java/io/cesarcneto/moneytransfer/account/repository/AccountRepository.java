@@ -26,7 +26,7 @@ public interface AccountRepository {
 
     @SqlQuery("SELECT * FROM accounts WHERE id IN (<accountIds>) ORDER BY id ASC FOR UPDATE")
     @RegisterConstructorMapper(Account.class)
-    List<Account> getAccountsById(@BindList List<UUID> accountIds);
+    List<Account> getAccountsByIdForUpdate(@BindList List<UUID> accountIds);
 
     @SqlBatch("UPDATE accounts SET balance = :balance, version = RANDOM_UUID() WHERE id = :id AND version = :version")
     int[] updateAccountsBalances(@BindBean List<Account> accountList);
