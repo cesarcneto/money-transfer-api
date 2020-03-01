@@ -8,3 +8,5 @@ create table accounts (
     -- PK
     constraint accounts_pk primary key (id)
 );
+
+CREATE INDEX id_and_version_index ON accounts(id, version);
