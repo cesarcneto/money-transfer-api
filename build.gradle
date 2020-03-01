@@ -29,6 +29,8 @@ ext {
     hikariConnectionPoolVersion = "3.4.1"
     flywayVersion = "6.2.4"
 
+    logbackVersion = "1.2.3"
+
     // Testing libraries
     junitVersion = "5.5.2"
     mockitoVersion = "2.1.0"
@@ -46,13 +48,15 @@ dependencies {
     annotationProcessor "org.mapstruct:mapstruct-processor:${mapstructVersion}"
     annotationProcessor "org.projectlombok:lombok:${lombokVersion}"
 
-    implementation "org.slf4j:slf4j-simple:${sl4jVersion}"
+    implementation "org.slf4j:slf4j-api:${sl4jVersion}"
+    implementation "ch.qos.logback:logback-classic:${logbackVersion}"
 
     implementation "com.h2database:h2:${h2Version}"
     implementation "org.jdbi:jdbi3-core:${jdbiVersion}"
     implementation "org.jdbi:jdbi3-sqlobject:${jdbiVersion}"
     implementation "com.zaxxer:HikariCP:${hikariConnectionPoolVersion}"
     implementation "org.flywaydb:flyway-core:${flywayVersion}"
+
 
     // Use JUnit Jupiter API for testing.
     testImplementation "org.junit.jupiter:junit-jupiter-api:${junitVersion}"

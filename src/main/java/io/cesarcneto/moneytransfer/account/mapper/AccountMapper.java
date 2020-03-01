@@ -13,6 +13,7 @@ public interface AccountMapper {
     AccountDto accountToDto(Account account);
 
     @Mapping(target = "id", ignore = true)
+    @Mapping(target = "version", ignore = true)
     @Mapping(target = "balance", source = "initialBalance")
     Account accountInputDtoToAccount(AccountInputDto accountInputDto);
 
